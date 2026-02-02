@@ -1,9 +1,20 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
-import { LuLayout, LuUsers, LuSettings, LuFileText, LuPlayCircle, LuLink, LuPlus, LuTrash2, LuDownload } from "react-icons/lu";
-import { LuCheckCircle, LuX, LuPlusCircle } from "react-icons/lu";
-import UserAvatar from '@/Components/UserAvatar';
+import { 
+    LuLayoutDashboard, 
+    LuUsers, 
+    LuSettings, 
+    LuFileText, 
+    LuPlay,         // <--- GANTI JADI INI
+    LuLink, 
+    LuPlus, 
+    LuTrash2, 
+    LuDownload,
+    LuCheck,
+    LuX,
+    LuFileQuestion 
+} from "react-icons/lu";import UserAvatar from '@/Components/UserAvatar';
 import UserSelector from '@/Components/UserSelector';
 
 export default function Show({ classroom, availableTeachers, availableStudents }) {
@@ -145,7 +156,7 @@ export default function Show({ classroom, availableTeachers, availableStudents }
             {/* TAB NAVIGATION */}
             <div className="flex items-center gap-6 border-b border-slate-200 mb-8 px-2">
                 {[
-                    { id: 'stream', label: 'Materi & Aktivitas', icon: LuLayout },
+                    { id: 'stream', label: 'Materi & Aktivitas', icon: LuLayoutDashboard },
                     { id: 'people', label: 'Anggota Kelas', icon: LuUsers },
                     { id: 'settings', label: 'Konfigurasi', icon: LuSettings },
                 ].map(tab => (
@@ -207,7 +218,7 @@ export default function Show({ classroom, availableTeachers, availableStudents }
                                             'bg-emerald-50 text-emerald-500'
                                         }`}>
                                             {item.type === 'pdf' && <LuFileText />}
-                                            {item.type === 'video' && <LuPlayCircle />}
+                                            {item.type === 'video' && <LuPlay />}
                                             {item.type === 'link' && <LuLink />}
                                         </div>
                                         <div className="flex-1">
@@ -399,7 +410,7 @@ export default function Show({ classroom, availableTeachers, availableStudents }
                                                         className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${q.correct_option_index === oIndex ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-slate-300 text-transparent hover:border-emerald-300'}`}
                                                         title="Tandai sebagai kunci jawaban"
                                                     >
-                                                        <LuCheckCircle className="text-sm" />
+                                                        <LuCheck className="text-sm" />
                                                     </button>
                                                     <input 
                                                         type="text" 
@@ -418,7 +429,7 @@ export default function Show({ classroom, availableTeachers, availableStudents }
 
                             {/* Tombol Tambah Soal */}
                             <button type="button" onClick={addQuestion} className="w-full py-3 border-2 border-dashed border-slate-300 text-slate-500 rounded-2xl font-bold hover:border-[#2f74a9] hover:text-[#2f74a9] transition flex items-center justify-center gap-2">
-                                <LuPlusCircle /> Tambah Soal Lain
+                                <LuPlus /> Tambah Soal Lain
                             </button>
 
                             {/* Footer Action */}

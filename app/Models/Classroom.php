@@ -8,31 +8,33 @@ class Classroom extends Model
 {
     protected $fillable = ['name', 'description', 'academic_year'];
 
-    // Relasi ke Semua User
+    // Relasi ke User (Pivot)
     public function users()
     {
         return $this->belongsToMany(User::class);
     }
 
-    // Filter Khusus Guru
+    // Guru
     public function teachers()
     {
         return $this->belongsToMany(User::class)->where('role', 'guru');
     }
 
-    // Filter Khusus Siswa
+    // Siswa
     public function students()
     {
         return $this->belongsToMany(User::class)->where('role', 'siswa');
     }
 
-    // --- TAMBAHKAN INI (YANG BIKIN ERROR) ---
+    // --- TAMBAHKAN DUA FUNGSI INI ---
+    
+    // Relasi ke Materi (LMS)
     public function materials()
     {
         return $this->hasMany(ClassMaterial::class);
     }
 
-    // --- TAMBAHKAN INI JUGA (UNTUK FITUR KUIS NANTI) ---
+    // Relasi ke Kuis
     public function quizzes()
     {
         return $this->hasMany(Quiz::class);

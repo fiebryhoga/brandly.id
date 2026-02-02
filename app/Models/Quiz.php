@@ -6,11 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Quiz extends Model
 {
-    //
+    protected $fillable = [
+        'classroom_id',
+        'title',
+        'description',
+        'duration_minutes',
+        'is_active',
+    ];
 
-    protected $fillable = ['classroom_id', 'title', 'description', 'duration_minutes', 'is_active'];
-
-    public function questions() {
+    public function questions()
+    {
         return $this->hasMany(QuizQuestion::class);
     }
 }

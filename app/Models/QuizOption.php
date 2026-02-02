@@ -6,10 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class QuizOption extends Model
 {
-    //
-    protected $fillable = ['quiz_id', 'question_text', 'points'];
+    // INI WAJIB ADA AGAR BISA DISIMPAN
+    protected $fillable = [
+        'quiz_question_id',
+        'option_text',
+        'is_correct',
+    ];
 
-    public function options() {
-        return $this->hasMany(QuizOption::class);
+    public function question()
+    {
+        return $this->belongsTo(QuizQuestion::class);
     }
 }

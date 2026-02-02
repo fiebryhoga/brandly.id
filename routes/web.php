@@ -52,6 +52,8 @@ Route::middleware(['auth', 'role:siswa'])->prefix('student')->name('siswa.')->gr
     Route::get('/dashboard', function () {
         return Inertia::render('Siswa/Dashboard');
     })->name('dashboard');
+
+    Route::get('/quiz/{id}/start', [\App\Http\Controllers\Student\QuizController::class, 'start'])->name('quiz.start');
 });
 
 // 5. Profile User

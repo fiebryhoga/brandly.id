@@ -55,18 +55,18 @@ export default function Index({ classrooms, filters }) {
                         <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[#2f74a9]/10 to-transparent rounded-bl-[3rem]"></div>
 
                         <div className="flex justify-between items-start mb-4 relative z-10">
-                            <div>
-                                {/* PERUBAHAN DI SINI: Judul dibungkus Link ke 'show' */}
-                                <Link href={route('admin.kelas.show', item.id)} className="block">
-                                    <h3 className="text-xl font-black text-[#1a2b4e] group-hover:text-[#2f74a9] transition-colors cursor-pointer hover:underline decoration-2 underline-offset-4 decoration-[#2f74a9]/30">
-                                        {item.name}
-                                    </h3>
-                                </Link>
-                                
-                                <div className="flex items-center gap-1 text-xs font-bold text-[#47be9e] mt-1 bg-emerald-50 w-fit px-2 py-1 rounded-lg">
-                                    <LuCalendar className="text-[10px]" /> {item.academic_year}
-                                </div>
+                        <div>
+                            {/* JUDUL HARUS DIBUNGKUS LINK SEPERTI INI */}
+                            <Link href={route('admin.kelas.show', item.id)} className="block group/title">
+                                <h3 className="text-xl font-black text-[#1a2b4e] group-hover/title:text-[#2f74a9] transition-colors cursor-pointer">
+                                    {item.name}
+                                </h3>
+                            </Link>
+                            
+                            <div className="flex items-center gap-1 text-xs font-bold text-[#47be9e] mt-1 bg-emerald-50 w-fit px-2 py-1 rounded-lg">
+                                <LuCalendar className="text-[10px]" /> {item.academic_year}
                             </div>
+                        </div>
                             
                             {/* Tombol Aksi (Edit & Delete) */}
                             <div className="flex gap-2">

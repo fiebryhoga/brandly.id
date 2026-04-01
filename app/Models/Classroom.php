@@ -8,35 +8,26 @@ class Classroom extends Model
 {
     protected $fillable = ['name', 'description', 'academic_year'];
 
-    // Relasi ke User (Pivot)
-    public function users()
-    {
-        return $this->belongsToMany(User::class);
-    }
-
-    // Guru
-    public function teachers()
-    {
-        return $this->belongsToMany(User::class)->where('role', 'guru');
-    }
-
-    // Siswa
-    public function students()
-    {
-        return $this->belongsToMany(User::class)->where('role', 'siswa');
-    }
-
-    // --- TAMBAHKAN DUA FUNGSI INI ---
+    // ... relasi users, teachers, students yang lama ...
+    public function users() { return $this->belongsToMany(User::class); }
+    public function teachers() { return $this->belongsToMany(User::class)->where('role', 'guru'); }
+    public function students() { return $this->belongsToMany(User::class)->where('role', 'siswa'); }
     
-    // Relasi ke Materi (LMS)
-    public function materials()
+    // ... relasi materials & quizzes yang lama ...
+    public function materials() { return $this->hasMany(ClassMaterial::class); }
+    public function quizzes() { return $this->hasMany(Quiz::class); }
+
+    // --- TAMBAHKAN DUA FUNGSI BARU INI ---
+    
+    // 1. Relasi ke Topik/BAB
+    public function topics()
     {
-        return $this->hasMany(ClassMaterial::class);
+        return $this->hasMany(ClassTopic::class);
     }
 
-    // Relasi ke Kuis
-    public function quizzes()
+    // 2. Relasi ke Materi yang TIDAK punya Topik (Uncategorized)
+    public function uncategorizedMaterials()
     {
-        return $this->hasMany(Quiz::class);
+        return $this->hasMany(ClassMaterial::class)->whereNull('class_topic_id');
     }
 }

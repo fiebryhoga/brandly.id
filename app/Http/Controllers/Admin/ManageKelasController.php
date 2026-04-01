@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\ClassTopic;
 use App\Models\Quiz;
 use App\Models\QuizQuestion;
 use App\Models\QuizOption;
@@ -78,15 +79,30 @@ class ManageKelasController extends Controller
      */
     public function show($id)
     {
-        $classroom = Classroom::with(['teachers', 'students', 'materials' => function($q) {
-            $q->latest();
-        }])->findOrFail($id);
+        // 1. Ambil data Kelas beserta relasi Topik & Materinya
+        $classroom = Classroom::with([
+            'teachers', 
+            'students', 
+            // Load Topik beserta materi di dalamnya (diurutkan terbaru)
+            'topics.materials' => function($q) {
+                $q->latest();
+            },
+            // Load materi yang tidak masuk topik
+            'uncategorizedMaterials' => function($q) {
+                $q->latest();
+            }
+        ])->findOrFail($id);
 
+        // 2. DEFINISIKAN VARIABEL $topicsDropdown (INI YANG TADI HILANG)
+        // Kita ambil ID dan Judul topik saja untuk mengisi <select> di frontend
+        $topicsDropdown = $classroom->topics()->orderBy('created_at')->get(['id', 'title']);
+
+        // 3. Kirim ke Frontend
         return Inertia::render('Admin/Kelas/Show', [
             'classroom' => $classroom,
-            // Data user untuk modal "Tambah Anggota" di tab People
             'availableTeachers' => User::where('role', 'guru')->get(['id', 'name', 'nip', 'avatar']),
             'availableStudents' => User::where('role', 'siswa')->get(['id', 'name', 'nis', 'avatar']),
+            'topicsDropdown' => $topicsDropdown, // Sekarang variabel ini sudah ada isinya
         ]);
     }
 
@@ -169,8 +185,9 @@ class ManageKelasController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'type' => 'required|in:pdf,video,link,quiz',
-            'file' => 'nullable|file|max:10240', // Max 10MB
+            'file' => 'nullable|file|max:10240',
             'url' => 'nullable|url',
+            'class_topic_id' => 'nullable|exists:class_topics,id', // Validasi Topik
         ]);
 
         $path = null;
@@ -180,6 +197,7 @@ class ManageKelasController extends Controller
 
         ClassMaterial::create([
             'classroom_id' => $id,
+            'class_topic_id' => $request->class_topic_id, // Simpan ID Topik
             'title' => $request->title,
             'description' => $request->description,
             'type' => $request->type,
@@ -187,7 +205,7 @@ class ManageKelasController extends Controller
             'external_url' => $request->url,
         ]);
 
-        return back()->with('success', 'Materi berhasil ditambahkan ke timeline.');
+        return back()->with('success', 'Materi berhasil ditambahkan.');
     }
 
     /**
@@ -211,13 +229,13 @@ class ManageKelasController extends Controller
         $request->validate([
             'title' => 'required|string',
             'duration_minutes' => 'required|integer|min:1',
-            'questions' => 'required|array|min:1', // Minimal 1 soal
+            'questions' => 'required|array|min:1',
             'questions.*.text' => 'required|string',
-            'questions.*.options' => 'required|array|min:2', // Minimal 2 opsi jawaban
-            'questions.*.correct_option_index' => 'required|integer', // Index jawaban benar
+            'questions.*.options' => 'required|array|min:2',
+            'questions.*.correct_option_index' => 'required|integer',
+            'class_topic_id' => 'nullable|exists:class_topics,id' // Validasi Topik
         ]);
 
-        // Gunakan Transaction agar data aman (kalau gagal 1, gagal semua)
         DB::transaction(function () use ($request, $id) {
             // 1. Buat Kuis
             $quiz = Quiz::create([
@@ -227,14 +245,13 @@ class ManageKelasController extends Controller
                 'duration_minutes' => $request->duration_minutes,
             ]);
 
-            // 2. Loop Soal
+            // 2. Loop Soal & Jawaban
             foreach ($request->questions as $qData) {
                 $question = $quiz->questions()->create([
                     'question_text' => $qData['text'],
-                    'points' => 10, // Default 10 poin, bisa diubah dinamis nanti
+                    'points' => 10,
                 ]);
 
-                // 3. Loop Opsi Jawaban
                 foreach ($qData['options'] as $index => $optText) {
                     $question->options()->create([
                         'option_text' => $optText,
@@ -243,15 +260,31 @@ class ManageKelasController extends Controller
                 }
             }
             
-            // 4. (Opsional) Tambahkan juga ke ClassMaterial agar muncul di Stream
+            // 3. Masukkan ke Timeline Materi (Link ke Kuis)
             ClassMaterial::create([
                 'classroom_id' => $id,
+                'class_topic_id' => $request->class_topic_id, // Masukkan ke Topik
                 'title' => '[KUIS] ' . $request->title,
                 'type' => 'quiz',
-                'external_url' => route('siswa.quiz.start', $quiz->id), // Nanti kita buat route ini buat siswa
+                // Pastikan route 'quiz.start' (milik siswa) sudah ada di web.php
+                'external_url' => route('siswa.quiz.start', $quiz->id), 
             ]);
         });
 
         return back()->with('success', 'Kuis berhasil diterbitkan!');
+    }
+
+    public function storeTopic(Request $request, $id)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255'
+        ]);
+        
+        ClassTopic::create([
+            'classroom_id' => $id,
+            'title' => $request->title
+        ]);
+
+        return back()->with('success', 'Topik/BAB berhasil dibuat.');
     }
 }

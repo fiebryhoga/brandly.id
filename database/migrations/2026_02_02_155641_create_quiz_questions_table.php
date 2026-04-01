@@ -15,7 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('quiz_id')->constrained()->onDelete('cascade');
             $table->text('question_text');
-            $table->integer('points')->default(10); // Bobot nilai per soal
+            // Tipe soal: multiple_choice, true_false, short_answer
+            $table->string('type')->default('multiple_choice'); 
+            $table->integer('points')->default(10); // Poin per soal
             $table->timestamps();
         });
     }

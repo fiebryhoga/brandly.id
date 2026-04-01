@@ -8,6 +8,7 @@ class Quiz extends Model
 {
     protected $fillable = [
         'classroom_id',
+        'class_topic_id',
         'title',
         'description',
         'duration_minutes',
@@ -17,5 +18,11 @@ class Quiz extends Model
     public function questions()
     {
         return $this->hasMany(QuizQuestion::class);
+    }
+    
+    // Relasi balik ke Topik (Opsional tapi bagus ada)
+    public function topic()
+    {
+        return $this->belongsTo(ClassTopic::class, 'class_topic_id');
     }
 }

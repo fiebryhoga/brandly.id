@@ -2,11 +2,17 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\AdminDashboardController;
-// Controller resource
+// Controller Resource
 use App\Http\Controllers\Admin\ManageAdminController;
 use App\Http\Controllers\Admin\ManageGuruController;
 use App\Http\Controllers\Admin\ManageSiswaController;
-use App\Http\Controllers\Admin\ManageKelasController;
+// Controller LMS Terpisah
+use App\Http\Controllers\Admin\ClassroomController;
+use App\Http\Controllers\Admin\ClassTopicController;
+use App\Http\Controllers\Admin\ClassMaterialController;
+use App\Http\Controllers\Admin\ClassQuizController;
+use App\Http\Controllers\Student\QuizController as StudentQuizController; // Alias biar ga bingung
+
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -22,22 +28,41 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Dashboard Utama
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
     
-    // Resource CRUD (Otomatis generate: index, create, store, edit, update, destroy)
+    // Resource CRUD Manajemen Akun
     Route::resource('admins', ManageAdminController::class);
     Route::resource('guru', ManageGuruController::class);
     Route::resource('siswa', ManageSiswaController::class);
     
-    // Kelas & LMS Logic
-    Route::resource('kelas', ManageKelasController::class);
-    
-    // Custom Routes untuk Materi & Kuis (HAPUS 'admin.' di depannya)
-    Route::post('/kelas/{id}/material', [ManageKelasController::class, 'storeMaterial'])->name('kelas.material.store'); 
-    Route::delete('/material/{id}', [ManageKelasController::class, 'deleteMaterial'])->name('material.destroy');
-    Route::post('/kelas/{id}/quiz', [ManageKelasController::class, 'storeQuiz'])->name('kelas.quiz.store');
+    // === MANAJEMEN AKADEMIK (LMS) ===
+        
+    // A. Kelas Utama (Index, Show, Edit, dll)
+    Route::resource('kelas', ClassroomController::class);
 
-    // Route Dummy Sidebar (Biar tidak error 404 kalau diklik menu sidebar yang belum jadi)
-    Route::get('/materi', fn() => Inertia::render('Admin/Materi/Index'))->name('materi.index');
-    Route::get('/quiz', fn() => Inertia::render('Admin/Quiz/Index'))->name('quiz.index');
+    // B. Topik / BAB
+    Route::post('/kelas/{id}/topic', [ClassTopicController::class, 'store'])->name('kelas.topic.store');
+    Route::put('/topic/{id}', [ClassTopicController::class, 'update'])->name('topic.update'); 
+    Route::delete('/topic/{id}', [ClassTopicController::class, 'destroy'])->name('topic.destroy');
+    
+
+    // MATERI
+    Route::get('/kelas/{id}/materi/create', [ClassMaterialController::class, 'create'])->name('kelas.material.create');
+    Route::post('/kelas/{id}/material', [ClassMaterialController::class, 'store'])->name('kelas.material.store');
+    
+    // ROUTE BARU: DETAIL MATERI
+    Route::get('/materi/{id}', [ClassMaterialController::class, 'show'])->name('material.show');
+    
+    // ROUTE BARU: EDIT & UPDATE
+    Route::get('/materi/{id}/edit', [ClassMaterialController::class, 'edit'])->name('material.edit');
+    Route::post('/materi/{id}/update', [ClassMaterialController::class, 'update'])->name('material.update');
+    
+    Route::delete('/material/{id}', [ClassMaterialController::class, 'destroy'])->name('material.destroy');
+
+    // D. Kuis
+    Route::post('/kelas/{id}/quiz', [ClassQuizController::class, 'store'])->name('kelas.quiz.store');
+    Route::get('/kelas/{id}/quiz/create', [ClassQuizController::class, 'create'])->name('kelas.quiz.create');
+    Route::get('/quiz/{id}', [ClassQuizController::class, 'show'])->name('quiz.show');
+
+
 });
 
 // 3. Dashboard Guru
@@ -53,7 +78,8 @@ Route::middleware(['auth', 'role:siswa'])->prefix('student')->name('siswa.')->gr
         return Inertia::render('Siswa/Dashboard');
     })->name('dashboard');
 
-    Route::get('/quiz/{id}/start', [\App\Http\Controllers\Student\QuizController::class, 'start'])->name('quiz.start');
+    // Route untuk Siswa Mengerjakan Kuis
+    Route::get('/quiz/{id}/start', [StudentQuizController::class, 'start'])->name('quiz.start');
 });
 
 // 5. Profile User
